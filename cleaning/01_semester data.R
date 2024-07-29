@@ -89,4 +89,5 @@ sem_data <- sem_data %>%
   mutate(sem_dum = ifelse(start_yr >= 1991 & start_yr <= 2000, 0, ifelse(start_yr >= 2001, 1, NA))) 
 sem_data
 
+save(sem_data,file="cleaning/data/sem_data.RData")
 #
