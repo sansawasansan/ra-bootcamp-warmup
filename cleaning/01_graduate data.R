@@ -68,3 +68,7 @@ d_list[[1]]
 #05 change time period to 1991-2010-----
 # 1991年から2010年までのデータフレームに変形しなさい
 #------------------------------------------------------------------------------=
+d_list # data 1991-2016
+grad_list <- d_list[1:19] #1991-2010
+grad_list
+save(grad_list,file="cleaning/data/grad_list.RData")
