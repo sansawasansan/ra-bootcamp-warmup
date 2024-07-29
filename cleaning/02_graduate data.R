@@ -71,4 +71,7 @@ d_list[[1]]
 d_list # data 1991-2016
 grad_list <- d_list[1:19] #1991-2010
 grad_list
-save(grad_list,file="cleaning/data/grad_list.RData")
+save(grad_list,file="cleaning/data/grad_list.RData")# list by year
+
+grad_data <- bind_rows(grad_list)
+save(grad_data,file="cleaning/data/grad_data.RData")# data frame
