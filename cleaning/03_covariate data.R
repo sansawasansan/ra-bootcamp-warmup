@@ -8,3 +8,19 @@
 # start:2024/07/29
 # end:
 ###############################################################################=
+#------------------------------------------------------------------------------=
+# dataset:graduate data ----
+#------------------------------------------------------------------------------=
+# preparation ----
+rm(list=ls())
+getwd()
+
+# library
+library(tidyverse)
+#------------------------------------------------------------------------------=
+#01 import dataset-----
+#------------------------------------------------------------------------------=
+# covariates data: covariates.xlsx
+# data/warmup training package/01_data/raw/covariates
+
+cov_data <- readxl::read_excel("./data/warmup training package/01_data/raw/covariates/covariates.xlsx")
