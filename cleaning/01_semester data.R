@@ -16,7 +16,7 @@ rm(list=ls())
 getwd()
 
 # library
-library(tidyverse);library(skimr)
+library(tidyverse);library(skimr);library(dplyr)
 #------------------------------------------------------------------------------=
 #01 import dataset-----
 #  生データを読み込みなさい (semester_dummy_1.csv, semester_dummy_2.csv)
@@ -65,7 +65,28 @@ sem_data <- sem_data[,1:5] # sem_data[,-6]でも可
 sem_data 
 
 #------------------------------------------------------------------------------=
-#04 add the column -----
+#04 add the column  of year-----
 #  semester制が導入された年の列を作成しなさい。
 #------------------------------------------------------------------------------=
-# 
+# start_yr
+sem_data <- sem_data %>%
+  group_by(unitid) %>%
+  arrange(year) %>%
+  mutate(prev_semester = lag(semester, default = 0),
+         start_yr = ifelse(prev_semester == 0 & semester == 1, year, NA)) %>%
+  fill(start_yr, .direction = "downup") %>%
+  ungroup() %>%
+  select(-prev_semester) %>% 
+  arrange(unitid, year) # unitid 毎に並び替え
+sem_data
+#------------------------------------------------------------------------------=
+#05 add the dummy column -----
+#  5.を用いてsemester制導入後を示すダミー変数を作成しなさい
+# 2001年にsemester制が導入された場合、1991~2000年は0, 2001年以降は1となる変数
+#------------------------------------------------------------------------------=
+# sem_dum
+sem_data <- sem_data %>%
+  mutate(sem_dum = ifelse(start_yr >= 1991 & start_yr <= 2000, 0, ifelse(start_yr >= 2001, 1, NA))) 
+sem_data
+
+#
