@@ -46,7 +46,7 @@ sem_dt_2
 #------------------------------------------------------------------------------=
 skim(sem_dt_1) # 1-6列目までcharacter
 skim(sem_dt_2) # 2列：char, 1,3-6列目:numeric
-class(sem_dt_2$x2)
+
 
 head(sem_dt_1)
 sem_dt_1$unitid <- as.numeric(sem_dt_1$unitid)
@@ -54,6 +54,9 @@ sem_dt_1$semester <- as.numeric(sem_dt_1$semester)
 sem_dt_1$quarter <- as.numeric(sem_dt_1$quarter)
 sem_dt_1$year <- as.numeric(sem_dt_1$year)
 sem_dt_1$Y <- as.numeric(sem_dt_1$Y)
+
+# sem_dt_1 <- sem_dt_1 %>%
+#   mutate(across(everything(), as.numeric)) #でも可能
 
 sem_data <- bind_rows(sem_dt_1,sem_dt_2)
 sem_data
@@ -71,14 +74,12 @@ sem_data
 # start_yr
 sem_data <- sem_data %>%
   group_by(unitid) %>%
-  arrange(year) %>%
-  mutate(prev_semester = lag(semester, default = 0),
-         start_yr = ifelse(prev_semester == 0 & semester == 1, year, NA)) %>%
-  fill(start_yr, .direction = "downup") %>%
+  mutate(start_yr = min(year)) %>%
   ungroup() %>%
-  select(-prev_semester) %>% 
   arrange(unitid, year) # unitid 毎に並び替え
 sem_data
+summary(sem_data$year)
+summary(sem_data$start_yr)
 #------------------------------------------------------------------------------=
 #05 add the dummy column -----
 #  5.を用いてsemester制導入後を示すダミー変数を作成しなさい
