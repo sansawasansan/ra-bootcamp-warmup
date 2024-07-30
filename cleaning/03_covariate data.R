@@ -1,12 +1,12 @@
 ###############################################################################=
 # 2024 RA bootcamp warm-up task-----
 # 01_cleaning
-# 03_Covariates Data----
+# 03_Covariates Data AND 04_Master data----
 # BOSTWICK, Valerie, Stefanie Fischer, and Matthew Lang. (2022). 
 # "Semesters or Quarters? TheEffect of the Academic Calendar on Postsecondary Student Outcomes.” 
 # American EconomicJournal: Economic Polic
 # start:2024/07/29
-# end:
+# end:2024/07/30
 ###############################################################################=
 #------------------------------------------------------------------------------=
 # dataset:graduate data ----
@@ -71,6 +71,23 @@ skim(cov_data_wi)
 #05 arrange variables-----
 # outcome_dataに含まれるunitidを特定し、covariatesに含まれるunitidをoutcomeデータに揃えなさい
 #------------------------------------------------------------------------------=
+#cov dataのすでにすべての変数をnumericに変更済み
 grad_data$unitid
 cov_data_wi$unitid
 sem_data$unitid
+
+save(cov_data_wi,file="cleaning/data/cov_data_wi.RData")# data frame
+
+#------------------------------------------------------------------------------=
+#06 create the master data-----
+# Master Dataの作成
+#------------------------------------------------------------------------------=
+head(sem_data)
+head(grad_data)
+head(cov_data_wi)
+
+master_data <- sem_data %>% 
+  left_join(grad_data,by=c("unitid","year")) %>% 
+  left_join(cov_data_wi,by=c("unitid","year"))
+save(master_data,file="cleaning/data/master_data.RData")# data frame
+#
