@@ -49,12 +49,16 @@ skim(master_data) # すべての行でNAなし
 #------------------------------------------------------------------------------=
 #01_2 make the descriptive summary table ----
 # 記述統計表を作りなさい
+# 論文Table１を参考に
 #------------------------------------------------------------------------------=
 summary(master_data)
+# library(psych)
+# psych::describe()も使える
 
 sub <- master_data %>% select(totcohortsize,w_cohortsize,m_cohortsize, tot4yrgrads,m_4yrgrads,tot_gradrate_4yr,men_gradrate_4yr,women_gradrate_4yr,instatetuition,costs,faculty,white_cohortsize )
 sub
 
+# Summary table =====
 sum_stat <- stat.desc(sub) %>%
   as.data.frame() %>%
   rownames_to_column(var = "statistic") %>%
@@ -93,4 +97,70 @@ gt_table <- sum_stat %>% gt() %>%
   )
 gt_table
 
+# table 1====
+names(master_data)
 
+#make a subset
+sub <- master_data %>% select(unitid,semester,quarter,
+  tot_gradrate_4yr,men_gradrate_4yr,women_gradrate_4yr,instatetuition,
+  costs,faculty,totcohortsize,white_cohortsize )
+sub
+
+
+All <- sub
+Never_switchers <- sub %>%
+  group_by(unitid) %>%
+  filter(all(semester == 0)|all(semester==1)) %>%
+  ungroup()
+Never_switchers
+Switchers <- anti_join(master_data, Never_switchers, by = "unitid")
+Switchers 
+
+calc_stats <- function(df) {
+  df_stats <- stat.desc(df %>% select(-unitid, -semester, -quarter), basic = FALSE)
+  df_stats <- as.data.frame(t(df_stats))
+  df_stats <- df_stats %>%
+    rownames_to_column(var = "variable") %>%
+    select(variable, mean, SE.mean) %>%
+    mutate(result = paste0(round(mean, 2), " (", round(SE.mean, 2), ")")) %>%
+    select(variable, result)
+  df_stats
+}
+
+All_stats <- calc_stats(All)
+Never_switchers_stats <- calc_stats(Never_switchers)
+Switchers_stats <- calc_stats(Switchers)
+
+summary_table <- All_stats %>%
+  rename(All = result) %>%
+  left_join(Never_switchers_stats %>% rename(Never_Switchers = result), by = "variable") %>%
+  left_join(Switchers_stats %>% rename(Switchers = result), by = "variable")
+
+# observation row
+all_count <- nrow(All)
+never_switchers_count <- nrow(Never_switchers)
+switchers_count <- nrow(Switchers)
+observation_row <- data.frame(
+  variable = "Observation",
+  All = as.character(all_count),
+  Never_Switchers = as.character(never_switchers_count),
+  Switchers = as.character(switchers_count)
+)
+summary_table <- bind_rows(summary_table, observation_row)
+
+# create table
+gt_table <- summary_table %>%
+  gt() %>%
+  tab_header(title = "Institution-Level Summary Statistics") %>%
+  cols_label(
+    variable = "Variable",
+    All = "All",
+    Never_Switchers = "Never Switchers",
+    Switchers = "Switchers"
+  )
+gt_table # observationの数が論文と違う
+
+#------------------------------------------------------------------------------=
+#01_2 make the descriptive summary table ----
+# 記述統計表を作りなさい
+#------------------------------------------------------------------------------=
