@@ -16,7 +16,8 @@
 rm(list=ls())
 # install.packages("pastecs")
 # library
-library(tidyverse);library(skimr);library(dplyr);library(pastecs);library(gt)
+library(tidyverse);library(skimr);library(dplyr);library(pastecs);library(gt)library(ggplot2)
+；
 
 #library(tidyr)
 
@@ -161,6 +162,19 @@ gt_table <- summary_table %>%
 gt_table # observationの数が論文と違う
 
 #------------------------------------------------------------------------------=
-#01_2 make the descriptive summary table ----
-# 記述統計表を作りなさい
+#01_3 calculate the mean graduate rate and make a figure ----
+# 3. 4年卒業率の平均推移を計算し、図で示しなさい
+# 参考：論文Figure 1
 #------------------------------------------------------------------------------=
+# annual gradrate_4yr
+an_master <- master_data %>% 
+  group_by(year) %>% 
+  summarise(an_gradrate_4yr=mean(tot_gradrate_4yr))
+an_master
+ggplot(an_master, aes(x = year, y = an_gradrate_4yr)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Annual Average 4-Year Graduation Rate",x = "Year",y = "Average Graduation Rate") +
+  ylim(0, 0.45) +
+  theme(panel.background = element_rect(fill = "white", colour = "black", size = 1.2))
+
