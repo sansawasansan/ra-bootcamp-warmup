@@ -83,11 +83,11 @@ summary(sem_data$start_yr)
 #------------------------------------------------------------------------------=
 #05 add the dummy column -----
 #  5.を用いてsemester制導入後を示すダミー変数を作成しなさい
-# 2001年にsemester制が導入された場合、1991~2000年は0, 2001年以降は1となる変数
+# 例：2001年にsemester制が導入された場合、1991~2000年は0, 2001年以降は1となる変数
 #------------------------------------------------------------------------------=
 # sem_dum
 sem_data <- sem_data %>%
-  mutate(sem_dum = ifelse(start_yr >= 1991 & start_yr <= 2000, 0, ifelse(start_yr >= 2001, 1, NA))) 
+  mutate(sem_dum = ifelse(year >= start_yr, 1, 0))
 sem_data
 
 save(sem_data,file="cleaning/data/sem_data.RData")
