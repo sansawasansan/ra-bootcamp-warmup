@@ -1,7 +1,7 @@
 ###############################################################################=
 # 2024 RA bootcamp warm-up task-----
 # 02_analysis
-# 01 descripitive analysis----
+# 01 descripitive analysis and 02 regression analysis----
 # BOSTWICK, Valerie, Stefanie Fischer, and Matthew Lang. (2022). 
 # "Semesters or Quarters? TheEffect of the Academic Calendar on Postsecondary Student Outcomes.” 
 # American EconomicJournal: Economic Polic
@@ -10,14 +10,14 @@
 ###############################################################################=
 #------------------------------------------------------------------------------=
 #01 descriptive analysis----
-# dataset:master_data 
+# data set:master_data 
 #------------------------------------------------------------------------------=
 #preparation
 rm(list=ls())
 # install.packages("pastecs")
 # library
-library(tidyverse);library(skimr);library(dplyr);library(pastecs);library(gt)library(ggplot2)
-；
+library(tidyverse);library(skimr);library(dplyr);library(pastecs);library(gt)
+library(ggplot2)
 
 #library(tidyr)
 
@@ -25,30 +25,41 @@ library(tidyverse);library(skimr);library(dplyr);library(pastecs);library(gt)lib
 load(file="cleaning/data/master_data.RData")# data frame
 master_data
 #------------------------------------------------------------------------------=
-#01_1 check the missing values
+##01_1 check the missing values ----
 #「(d) Master Dataの作成」で作成したデータの、各列に含まれるNAの数を数えなさい。
 #------------------------------------------------------------------------------=
 skim(master_data)
 # women_gradrate_4yr に24個のNA
 # men_gradrate_4yr  に65個のNA　
+# start_yr,sem_dumにmissing646個
 
 # women_gradrate_4yr または men_gradrate_4yr にNAが含まれる行を抽出
 na_rows <- master_data %>%
-  filter(is.na(women_gradrate_4yr) | is.na(men_gradrate_4yr))
-print(na_rows,n=89)
+  filter(is.na(women_gradrate_4yr) | is.na(men_gradrate_4yr)|is.na(start_yr))
+options(max.print = 1000)
+print(na_rows)
 
 # 男女ともにcohorotとgradsの人数が0のため、rateを0とあらわさず、NAとなっていた。
 # NAとなっている値をすべてrate=0に置き換え
+# semseterを導入せず、ずっとquarterのところもNA
+# semester導入しなかった大学はsem_dumを0に変更
 
 master_data <- master_data %>%
   mutate(women_gradrate_4yr = ifelse(is.na(women_gradrate_4yr), 0, women_gradrate_4yr),
          men_gradrate_4yr = ifelse(is.na(men_gradrate_4yr), 0, men_gradrate_4yr))
+
+master_data <- master_data %>%
+  group_by(unitid) %>%
+  mutate(sem_dum = ifelse(is.na(sem_dum) & all(quarter == 1), 0, sem_dum)) %>%
+  ungroup()
+
+
 master_data
-skim(master_data) # すべての行でNAなし
+skim(master_data) # start_yrは補完していないので、NAがあるが、ほかはNAなくなった
 
 
 #------------------------------------------------------------------------------=
-#01_2 make the descriptive summary table ----
+##01_2 make the descriptive summary table ----
 # 記述統計表を作りなさい
 # 論文Table１を参考に
 #------------------------------------------------------------------------------=
@@ -59,7 +70,7 @@ summary(master_data)
 sub <- master_data %>% select(totcohortsize,w_cohortsize,m_cohortsize, tot4yrgrads,m_4yrgrads,tot_gradrate_4yr,men_gradrate_4yr,women_gradrate_4yr,instatetuition,costs,faculty,white_cohortsize )
 sub
 
-# Summary table =====
+### Summary table =====
 sum_stat <- stat.desc(sub) %>%
   as.data.frame() %>%
   rownames_to_column(var = "statistic") %>%
@@ -98,11 +109,11 @@ gt_table <- sum_stat %>% gt() %>%
   )
 gt_table
 
-# table 1====
+### table 1====
 names(master_data)
 
 #make a subset
-sub <- master_data %>% select(unitid,semester,quarter,
+sub <- master_data %>% select(unitid,semester,quarter,sem_dum,
   tot_gradrate_4yr,men_gradrate_4yr,women_gradrate_4yr,instatetuition,
   costs,faculty,totcohortsize,white_cohortsize )
 sub
@@ -162,7 +173,7 @@ gt_table <- summary_table %>%
 gt_table # observationの数が論文と違う
 
 #------------------------------------------------------------------------------=
-#01_3 calculate the mean graduate rate and make a figure ----
+##01_3 calculate the mean graduate rate and make a figure ----
 # 3. 4年卒業率の平均推移を計算し、図で示しなさい
 # 参考：論文Figure 1
 #------------------------------------------------------------------------------=
@@ -179,7 +190,7 @@ ggplot(an_master, aes(x = year, y = an_gradrate_4yr)) +
   theme(panel.background = element_rect(fill = "white", colour = "black", size = 1.2))
 
 #------------------------------------------------------------------------------=
-#01_4 calculate the semester calendar rate and make figure ----
+##01_4 calculate the semester calendar rate and make figure ----
 #4. semester導入率を計算し、図で示しなさい
 # 参考：論文Figure 1
 #------------------------------------------------------------------------------=
@@ -196,7 +207,7 @@ ggplot(an_master, aes(x = year, y = an_semrate)) +
   theme(panel.background = element_rect(fill = "white", colour = "black", size = 1.2))
 
 #------------------------------------------------------------------------------=
-#01_5 create the scatter plot----
+##01_5 create the scatter plot----
 #5. 以下の3つの変数を横軸、「4年卒業率」を縦軸にとった、散布図を作成しなさい。
 #女子学生比率,白人学生割合,学費(instatetuition)
 #------------------------------------------------------------------------------=
@@ -229,3 +240,15 @@ plot2
 plot3 <- scatter_plot(master_data, instatetuition, tot_gradrate_4yr) +
   labs(title = "Instatetuition vs Ratio of 4 year graduation")
 plot3
+
+#------------------------------------------------------------------------------=
+#02 Regression analysis----
+# data set:master_data 
+#------------------------------------------------------------------------------=
+
+model <- lm(tot_gradrate_4yr~sem_dum,data=master_data)
+summary(model)
+# install.packages("modelsummary")
+library(modelsummary)
+msummary(model)
+#
