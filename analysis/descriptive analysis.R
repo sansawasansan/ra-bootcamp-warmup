@@ -118,7 +118,7 @@ Switchers <- anti_join(master_data, Never_switchers, by = "unitid")
 Switchers 
 
 calc_stats <- function(df) {
-  df_stats <- stat.desc(df %>% select(-unitid, -semester, -quarter), basic = FALSE)
+  df_stats <- stat.desc(df %>% select(-unitid, -quarter), basic = FALSE)
   df_stats <- as.data.frame(t(df_stats))
   df_stats <- df_stats %>%
     rownames_to_column(var = "variable") %>%
@@ -178,3 +178,54 @@ ggplot(an_master, aes(x = year, y = an_gradrate_4yr)) +
   ylim(0, 0.45) +
   theme(panel.background = element_rect(fill = "white", colour = "black", size = 1.2))
 
+#------------------------------------------------------------------------------=
+#01_4 calculate the semester calendar rate and make figure ----
+#4. semester導入率を計算し、図で示しなさい
+# 参考：論文Figure 1
+#------------------------------------------------------------------------------=
+# annual semrate
+an_master <- master_data %>% 
+  group_by(year) %>% 
+  summarise(an_semrate=mean(semester))
+an_master
+ggplot(an_master, aes(x = year, y = an_semrate)) +
+  geom_line() +
+  geom_point() +
+  labs(title ="Fraction of schools on semesters",x = "Year",y = "share on semesters") +
+  ylim(0,1) +
+  theme(panel.background = element_rect(fill = "white", colour = "black", size = 1.2))
+
+#------------------------------------------------------------------------------=
+#01_5 create the scatter plot----
+#5. 以下の3つの変数を横軸、「4年卒業率」を縦軸にとった、散布図を作成しなさい。
+#女子学生比率,白人学生割合,学費(instatetuition)
+#------------------------------------------------------------------------------=
+master_data
+
+# add white ratio and women ration
+master_data <- master_data %>%
+  mutate(women_ratio = w_cohortsize / totcohortsize,
+         white_ratio = white_cohortsize / totcohortsize)
+
+#using enquo()
+scatter_plot <- function(data, x, y) {
+  x <- enquo(x)
+  y <- enquo(y)
+  ggplot(data) +
+    geom_point(aes(!!x, !!y)) +
+    labs(x = quo_name(x), y = quo_name(y)) +
+    theme_minimal()
+}
+
+#x:women
+plot1 <- scatter_plot(master_data, women_ratio, tot_gradrate_4yr) +
+  labs(title = "Ratio of women students vs Ratio of 4 year graduation")
+plot1
+#x:white students 
+plot2 <- scatter_plot(master_data, white_ratio, tot_gradrate_4yr) +
+  labs(title = "Ratio of white studendts vs Ratio of 4 year graduation")
+plot2
+#x:instatestution
+plot3 <- scatter_plot(master_data, instatetuition, tot_gradrate_4yr) +
+  labs(title = "Instatetuition vs Ratio of 4 year graduation")
+plot3
