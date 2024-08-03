@@ -72,11 +72,14 @@ sem_data
 #  semester制が導入された年の列を作成しなさい。
 #------------------------------------------------------------------------------=
 # start_yr
-sem_data <- sem_data %>%
+start_years <- sem_data %>%
+  filter(semester == 1) %>%
   group_by(unitid) %>%
-  mutate(start_yr = min(year)) %>%
-  ungroup() %>%
-  arrange(unitid, year) # unitid 毎に並び替え
+  summarize(start_yr = min(year))
+
+sem_data <- sem_data %>%
+  left_join(start_years, by = "unitid")
+
 sem_data
 summary(sem_data$year)
 summary(sem_data$start_yr)
