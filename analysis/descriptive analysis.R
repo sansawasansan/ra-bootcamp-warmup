@@ -6,7 +6,7 @@
 # "Semesters or Quarters? TheEffect of the Academic Calendar on Postsecondary Student Outcomes.” 
 # American EconomicJournal: Economic Polic
 # start:2024/07/30
-# end:
+# end:2024/08/04
 ###############################################################################=
 #------------------------------------------------------------------------------=
 #01 descriptive analysis----
